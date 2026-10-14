@@ -10,12 +10,12 @@ variable "vpc_id" {
 
 variable "instance_ami" {
   description = "AMI ID for the instances"
-  default     = "ami-0195204d5dce06d99"
+  default     = "ami-004d1eaf8eaa0107d"
 }
 
 variable "instance_key_name" {
   description = "An Existing Keypair to be used for the instances"
-  default     = "project_key"
+  default     = "jenkins-key"
 }
 
 variable "instance_subnet_id" {
@@ -30,10 +30,10 @@ variable "instance_type" {
 
 variable "s3_bucket_name" {
   description = "The name of the S3 bucket for Terraform state"
-  default     = "springboot-java-s3-bucket"
+  default     = "dawud-springboot-bucket"
 }
 
 variable "dynamodb_table_name" {
   description = "The name of the DynamoDB table for Terraform state locking"
-  default     = "springboot-app-dynamodb"
+  default     = "dawud-springboot-DynamoDB"
 }

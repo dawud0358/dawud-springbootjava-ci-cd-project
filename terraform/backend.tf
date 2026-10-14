@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket         = "springboot-java-s3-bucket"
+    bucket         = "dawud-springboot-bucket"
     key            = "terraform_statefile"
     region         = "us-east-1"
-    dynamodb_table = "springboot-app-dynamodb"
+    dynamodb_table = "dawud-springboot-DynamoDB"
   }
 }
