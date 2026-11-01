@@ -1,14 +1,31 @@
 pipeline {
     agent any
+
     options {
         timeout(time: 10, unit: 'MINUTES')
     }
 
     parameters {
-        string(name: 'GITHUB_CREDENTIAL', defaultValue: 'jenkins-github-creds', description: 'Github access credentials id')
-        string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/dawud0358/springbootjava-app-ci-cd.git', description: 'Github repository url')
-        string(name: 'GITHUB_BRANCH', defaultValue: 'main', description: 'Github branch for your build')
-        string(name: 'SSH_SERVER', defaultValue: 'ansible_server', description: 'The server that Jenkins will SSH into Using Publish Over SSH.')
+        string(
+            name: 'GITHUB_CREDENTIAL',
+            defaultValue: 'jenkins-github-creds',
+            description: 'GitHub access credentials ID'
+        )
+        string(
+            name: 'GITHUB_REPO_URL',
+            defaultValue: 'https://github.com/dawud0358/springbootjava-app-ci-cd.git',
+            description: 'GitHub repository URL'
+        )
+        string(
+            name: 'GITHUB_BRANCH',
+            defaultValue: 'main',
+            description: 'GitHub branch'
+        )
+        string(
+            name: 'SSH_SERVER',
+            defaultValue: 'ansible_server',
+            description: 'Publish Over SSH server configuration'
+        )
     }
 
     environment {
@@ -21,63 +38,66 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                script {
-                    git branch: "${GITHUB_BRANCH}", credentialsId: "${GITHUB_CREDENTIAL}", url: "${GITHUB_REPO_URL}"
-                }
+                git branch: "${GITHUB_BRANCH}",
+                    credentialsId: "${GITHUB_CREDENTIAL}",
+                    url: "${GITHUB_REPO_URL}"
             }
         }
 
-        stage('Copy Ansible Files') {
+        stage('Copy Ansible Playbooks') {
             steps {
-                script {
-                   sshPublisher(publishers: [sshPublisherDesc(
-                       configName: env.SSH_SERVER,
-                       transfers: [sshTransfer(
-                           sourceFiles: 'ansible/packages1.yml, ansible/packages2.yml, ansible/hosts',
-                           removePrefix: 'ansible/',
-                           makeEmptyDirs: false,
-                           remoteDirectory: '/ansible-files/'
-                    )],
-                       usePromotionTimestamp: false,
-                       useWorkspaceInPromotion: false,
-                       verbose: true,
-                       
-                )]
-            )
-        }
-    }
-}
-
-    
-        stage('Run Playbooks On Ansible Server') {
-            steps {
-                script {
-                   def deployCommand = '''
-    cd /home/ec2-user/ansible-files 
-    sudo cp * /etc/ansible/
-    cd /etc/ansible
-    sudo ansible-playbook -i hosts packages1.yml packages2.yml
-'''
-
-                    sshPublisher(publishers: [sshPublisherDesc(
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
                         configName: env.SSH_SERVER,
-                        transfers: [sshTransfer(
-                            cleanRemote: false,
-                            execCommand: deployCommand,
-                            execTimeout: 120000,
-                            flatten: false,
-                            makeEmptyDirs: false,
-                            noDefaultExcludes: false,
-                            patternSeparator: '[, ]+',
-                            remoteDirectory: '',
-                            remoteDirectorySDF: false,
-                            removePrefix: '',
-                            sourceFiles: ''
-                        )],
+                        transfers: [
+                            sshTransfer(
+                                sourceFiles: 'ansible/packages1.yml, ansible/packages2.yml',
+                                removePrefix: 'ansible/',
+                                remoteDirectory: '/ansible-files/',
+                                makeEmptyDirs: false
+                            )
+                        ],
                         usePromotionTimestamp: false,
                         useWorkspaceInPromotion: false,
                         verbose: true
-                    )])
+                    )
+                ])
+            }
+        }
+
+        stage('Run Playbooks On Ansible Server') {
+            steps {
+                script {
+                    def deployCommand = '''
+                        set -e
+
+                        cd /home/ec2-user/ansible-files
+
+                        sudo install -o root -g root -m 0644 packages1.yml /etc/ansible/packages1.yml
+                        sudo install -o root -g root -m 0644 packages2.yml /etc/ansible/packages2.yml
+
+                        sudo ansible-playbook \
+                            -i /etc/ansible/inventory.ini \
+                            /etc/ansible/packages1.yml \
+                            /etc/ansible/packages2.yml
+                    '''
+
+                    sshPublisher(publishers: [
+                        sshPublisherDesc(
+                            configName: env.SSH_SERVER,
+                            transfers: [
+                                sshTransfer(
+                                    execCommand: deployCommand,
+                                    execTimeout: 120000,
+                                    sourceFiles: '',
+                                    remoteDirectory: ''
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: true
+                        )
+                    ])
                 }
             }
         }
