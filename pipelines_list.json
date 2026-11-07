@@ -10,6 +10,12 @@
   "repo": "https://github.com/dawud0358/dawud-springbootjava-ci-cd-project.git",
   "branch": "main",
   "jenkinsfile": "ansible/Jenkinsfile"
+  },
+  {
+  "name": "continuos-integration-pipeline",
+  "repo": "https://github.com/dawud0358/dawud-springbootjava-ci-cd-project.git",
+  "branch": "main",
+  "jenkinsfile": "continuos-integration/Jenkinsfile"
   }
 ]
    

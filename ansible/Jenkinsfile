@@ -13,7 +13,7 @@ pipeline {
         )
         string(
             name: 'GITHUB_REPO_URL',
-            defaultValue: 'https://github.com/dawud0358/springbootjava-app-ci-cd.git',
+            defaultValue: 'https://github.com/dawud0358/dawud-springbootjava-ci-cd-project.git',
             description: 'GitHub repository URL'
         )
         string(
