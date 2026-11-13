@@ -52,17 +52,18 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
-                        sh './mvnw sonar:sonar'
-                    }
-                }
+    steps {
+        script {
+            withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
+                sh '''
+                    ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.3.0.6276:sonar \
+                    -Dsonar.projectKey=springbootjava-app
+                '''
             }
         }
+    }
+}
        
-        
-
     }
     post {
         success {
